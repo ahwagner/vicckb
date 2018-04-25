@@ -1,4 +1,4 @@
-from definitions import *
+from .definitions import *
 import json
 from collections import defaultdict, Counter
 import pickle
@@ -9,7 +9,6 @@ from math import ceil
 import hashlib
 from warnings import warn
 import obonet
-import networkx
 
 
 class Element:
@@ -329,7 +328,7 @@ class RawAssociation(ViccAssociation):
 
 class ViccDb:
 
-    DEFAULT_CACHE = PROJECT_ROOT / 'association_cache.pkl'
+    DEFAULT_CACHE = DATA_ROOT / 'association_cache.pkl'
 
     def __init__(self, associations=None, load_cache=False, save_cache=False, cache_path=DEFAULT_CACHE):
         if load_cache and save_cache:
