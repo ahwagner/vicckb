@@ -44,7 +44,10 @@ class Disease(Element):
         return self.term
 
     def __str__(self):
-        return str(self.term)
+        if self.id and self.source:
+            return f'{self.source}: {self.id}'
+        else:
+            return f'No reference: {self.term}'
 
     _DISEASE_ONTOLOGY_URL = 'https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/HumanDO.obo'
     DISEASE_ONTOLOGY = obonet.read_obo(_DISEASE_ONTOLOGY_URL)

@@ -94,6 +94,16 @@ class TestDisease(object):
         graph = Disease.DISEASE_ONTOLOGY
         assert networkx.is_directed_acyclic_graph(graph)
 
+    def test_uniqueness(self):
+        s = set()
+        disease_a = Disease('DOID:1', 'DOID', 'Disease_1')
+        disease_b = Disease('DOID:1', 'DOID', 'Disease 1')
+        disease_c = Disease('DOID:2', 'DOID', 'Disease_2')
+        s.add(disease_a)
+        s.add(disease_b)
+        s.add(disease_c)
+        assert 2 == len(s)
+
 
 class TestOncokb(object):
 
