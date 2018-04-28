@@ -1,12 +1,12 @@
 import pytest
 from collections import Counter
-from viccdb import ViccDb, GenomicFeature, Disease
+from vicckb.model import ViccDb, GenomicFeature, Disease
 from os import environ
 import networkx
 
 
 CACHE_PRESENT = ViccDb.DEFAULT_CACHE.exists()
-PAPER_TESTING = bool(environ['VICC_PAPER_TESTING'])
+PAPER_TESTING = bool(environ.get('VICC_PAPER_TESTING'))
 if PAPER_TESTING:
     SOURCES = ['molecularmatch', 'civic', 'pmkb', 'oncokb', 'jax', 'cgi']
 else:
