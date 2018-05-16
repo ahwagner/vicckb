@@ -558,9 +558,17 @@ class ViccDb:
         else:
             if query.issubfeature(feature):
                 p = len(query) / len(feature)
-            else:
+            elif query.issuperfeature(feature):
                 p = len(feature) / len(query)
-            assert p < 1
+            else:
+                # When query and feature are only partially overlapping
+                if query < feature:
+                    num = query.end - feature.start + 1
+                else:
+                    num = feature.end - query.start + 1
+                den = max(len(feature), len(query))
+                p = num / den
+            assert p < 1, f'{p} should be less than 1 for {query} on {feature}'
             match['p'] = p
             if p >= 0.1:
                 match['type'] = 'focal'
@@ -604,14 +612,20 @@ class ViccDb:
         for key, matches in hit_index.items():
             q, association_hash = key
             best_match = ViccDb._get_best_match(matches)
+            a = self.get_association_by_hash(association_hash)
             hit = {
                 'query': q,
-                'association': self._hashed[association_hash],
+                'association': a,
                 'matches': matches,
                 'best_match': best_match
             }
             hits.append(hit)
         return hits
+
+    def get_association_by_hash(self, key):
+        a = self._hashed[key]
+        assert len(a) == 1
+        return a[0]
 
     @property
     def sources(self):

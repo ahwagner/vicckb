@@ -73,6 +73,19 @@ class TestViccDb(object):
         hits2 = list(vdb.search_by_features([gf]))
         assert len(hits2) == len(hits)
 
+    def test_multisearch_features(self, vdb):
+        TEST_SIZE = 500
+        unique_features = set()
+        x = [x.features for x in vdb]
+        for fset in x:
+            unique_features.update(fset)
+        unique_features = list(unique_features)
+        hits = vdb.search_by_features(unique_features[:TEST_SIZE])
+        aset = {hit['association'] for hit in hits}
+        assert len(aset) > TEST_SIZE
+        qset = {hit['query'] for hit in hits}
+        assert len(qset) < TEST_SIZE
+
 
 class TestGenomicFeatures(object):
 
