@@ -9,6 +9,7 @@ from math import ceil
 import hashlib
 from warnings import warn
 import obonet
+from operator import itemgetter, attrgetter
 
 
 class Element:
@@ -368,15 +369,30 @@ class ViccDb:
         raise NotImplementedError
 
     def _index_associations(self):
+        features = []
         associations_by_source = defaultdict(list)
         hashed = defaultdict(list)
         for association in self.associations:
             source = association['source']
             associations_by_source[source].append(association)
-            hashed[hash(association)].append(association)
+            h = hash(association)
+            hashed[h].append(association)
+            for feature in association.features:
+                features.append((feature, h))
+        self._features = features
+        self._features_sorted = False
         self.associations_by_source = dict(associations_by_source)
         self._hashed = hashed
         self._element_by_source = dict()
+
+    @property
+    def features(self):
+        if self._features_sorted:
+            return self._features
+        else:
+            self._features = sorted(self._features, key=itemgetter(0))
+            self._features_sorted = True
+            return self._features
 
     def select(self, filter_function):
         associations = filter(filter_function, self.associations)
@@ -537,6 +553,22 @@ class ViccDb:
 
     def search_by_features(self, genomic_features):
         assert isinstance(genomic_features, list)
+        db_features_pointer = 0
+        query_features_pointer = 0
+        c = GenomicFeature.CHROMOSOMES
+        genomic_features = sorted(genomic_features)
+        while query_features_pointer < len(genomic_features) and db_features_pointer < len(self.features):
+            q = genomic_features[query_features_pointer]
+            d, association_hash = self.features[db_features_pointer]
+            if q.reference_name != d.reference_name:
+                raise NotImplementedError('All records in query and datastore currently must match same reference')
+            if c.index(q.chromosome) < c.index(d.chromosome):
+                query_features_pointer += 1
+                continue
+            elif c.index(q.chromosome) > c.index(d.chromosome):
+                db_features_pointer += 1
+                continue
+            raise NotImplementedError # TODO: Chromosomes are equal, what next?
 
 
     @property
