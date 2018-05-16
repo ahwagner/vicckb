@@ -507,6 +507,11 @@ class ViccDb:
 
     def search_by_feature(self, chromosome=None, start=None, end=None, reference_name=None,
                           name=None, alt=None, gene_symbol=None, genomic_feature=None):
+        """
+        Returns a list of hits, each corresponding to a single query / association match.
+        All features of an association matching a query are stored in the matches attribute.
+        The best match between a query and association is stored in the best_match attribute.
+        """
         if not isinstance(genomic_feature, GenomicFeature):
             query = GenomicFeature(chromosome, start, end, reference_name, name, gene_symbol, alt=alt)
         else:
@@ -519,32 +524,11 @@ class ViccDb:
                 continue
             match_details = list()
             for feature in matches:
-                match = {'feature': feature}
-                if query == feature:
-                    if query.alt and feature.alt and query.alt == feature.alt:
-                        match['type'] = 'exact'
-                    else:
-                        match['type'] = 'positional'
-                    match['p'] = 1
-                else:
-                    if query.issubfeature(feature):
-                        p = len(query) / len(feature)
-                    else:
-                        p = len(feature) / len(query)
-                    assert p < 1
-                    match['p'] = p
-                    if p >= 0.1:
-                        match['type'] = 'focal'
-                    else:
-                        match['type'] = 'regional'
+                match = ViccDb._get_match_type(query, feature)
                 match_details.append(match)
-            if len(match_details) == 1:
-                best_match = match_details[0]
-            else:
-                s1 = sorted(match_details, key=lambda x: x['p'], reverse=True)
-                s2 = sorted(s1, key=lambda x: ViccDb.MATCH_RANKING.index(x['type']))
-                best_match = s2[0]
+            best_match = ViccDb._get_best_match(match_details)
             hit = {
+                'query': query,
                 'association': association,
                 'matches': match_details,
                 'best_match': best_match
@@ -552,25 +536,82 @@ class ViccDb:
             hits.append(hit)
         return hits
 
+    @staticmethod
+    def _get_best_match(matches):
+        if len(matches) == 1:
+            best_match = matches[0]
+        else:
+            s1 = sorted(matches, key=lambda x: x['p'], reverse=True)
+            s2 = sorted(s1, key=lambda x: ViccDb.MATCH_RANKING.index(x['type']))
+            best_match = s2[0]
+        return best_match
+
+    @staticmethod
+    def _get_match_type(query, feature):
+        match = {'feature': feature}
+        if query == feature:
+            if query.alt and feature.alt and query.alt == feature.alt:
+                match['type'] = 'exact'
+            else:
+                match['type'] = 'positional'
+            match['p'] = 1
+        else:
+            if query.issubfeature(feature):
+                p = len(query) / len(feature)
+            else:
+                p = len(feature) / len(query)
+            assert p < 1
+            match['p'] = p
+            if p >= 0.1:
+                match['type'] = 'focal'
+            elif p > 0:
+                match['type'] = 'regional'
+            else:
+                raise ValueError(f'Expected an overlap between {query} and {feature}')
+        return match
+
     def search_by_features(self, genomic_features):
         assert isinstance(genomic_features, list)
         db_features_pointer = 0
         query_features_pointer = 0
         c = GenomicFeature.CHROMOSOMES
-        genomic_features = sorted(genomic_features)
-        while query_features_pointer < len(genomic_features) and db_features_pointer < len(self.features):
-            q = genomic_features[query_features_pointer]
+        query_features = sorted(genomic_features)
+        hit_index = dict()
+        while query_features_pointer < len(query_features) and db_features_pointer < len(self.features):
+            q = query_features[query_features_pointer]
             d, association_hash = self.features[db_features_pointer]
             if q.reference_name != d.reference_name:
                 raise NotImplementedError('All records in query and datastore currently must match same reference')
             if c.index(q.chromosome) < c.index(d.chromosome):
                 query_features_pointer += 1
                 continue
-            elif c.index(q.chromosome) > c.index(d.chromosome):
+            if c.index(q.chromosome) > c.index(d.chromosome):
                 db_features_pointer += 1
                 continue
-            raise NotImplementedError # TODO: Chromosomes are equal, what next?
-
+            if q.start > d.end:
+                db_features_pointer += 1
+                continue
+            if q.end < d.start:
+                query_features_pointer += 1
+                continue
+            m = ViccDb._get_match_type(q, d)
+            key = (q, association_hash)
+            matches = hit_index.get(key, list())
+            matches.append(m)
+            hit_index[key] = matches
+            db_features_pointer += 1
+        hits = list()
+        for key, matches in hit_index.items():
+            q, association_hash = key
+            best_match = ViccDb._get_best_match(matches)
+            hit = {
+                'query': q,
+                'association': self._hashed[association_hash],
+                'matches': matches,
+                'best_match': best_match
+            }
+            hits.append(hit)
+        return hits
 
     @property
     def sources(self):
