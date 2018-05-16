@@ -488,8 +488,8 @@ class ViccDb:
 
     MATCH_RANKING = ['exact', 'positional', 'focal', 'regional']
 
-    def search_features(self, chromosome=None, start=None, end=None, reference_name=None,
-                        name=None, alt=None, gene_symbol=None, genomic_feature=None):
+    def search_by_feature(self, chromosome=None, start=None, end=None, reference_name=None,
+                          name=None, alt=None, gene_symbol=None, genomic_feature=None):
         if not isinstance(genomic_feature, GenomicFeature):
             query = GenomicFeature(chromosome, start, end, reference_name, name, gene_symbol, alt=alt)
         else:
@@ -534,6 +534,10 @@ class ViccDb:
             }
             hits.append(hit)
         return hits
+
+    def search_by_features(self, genomic_features):
+        assert isinstance(genomic_features, list)
+
 
     @property
     def sources(self):

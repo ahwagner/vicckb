@@ -62,8 +62,8 @@ class TestViccDb(object):
         assert len(delta) > 5000
 
     def test_search_features(self, vdb):
-        hits = vdb.search_features(chromosome=7, start=140453136, end=140453136,
-                                      reference_name='GRCh37', name='V600E', gene_symbol='BRAF')
+        hits = vdb.search_by_feature(chromosome=7, start=140453136, end=140453136,
+                                     reference_name='GRCh37', name='V600E', gene_symbol='BRAF')
         assert len(hits) >= 500
         associations = [hit['association'] for hit in hits]
         results = ViccDb(associations)
