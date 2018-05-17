@@ -516,25 +516,7 @@ class ViccDb:
             query = GenomicFeature(chromosome, start, end, reference_name, name, gene_symbol, alt=alt)
         else:
             query = genomic_feature
-        hits = list()
-        for association in self:
-            features = association.features
-            matches = [x for x in features if (x.issuperfeature(query) or x.issubfeature(query))]
-            if not matches:
-                continue
-            match_details = list()
-            for feature in matches:
-                match = ViccDb._get_match_type(query, feature)
-                match_details.append(match)
-            best_match = ViccDb._get_best_match(match_details)
-            hit = {
-                'query': query,
-                'association': association,
-                'matches': match_details,
-                'best_match': best_match
-            }
-            hits.append(hit)
-        return hits
+        return self.search_by_features([query])
 
     @staticmethod
     def _get_best_match(matches):
