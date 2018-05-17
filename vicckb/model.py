@@ -9,7 +9,7 @@ from math import ceil
 import hashlib
 from warnings import warn
 import obonet
-from operator import itemgetter, attrgetter
+from operator import itemgetter
 
 
 class Element:
