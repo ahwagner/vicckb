@@ -582,11 +582,18 @@ class ViccDb:
         assert isinstance(genomic_features, list)
         db_features_pointer = 0
         query_features_pointer = 0
+        match_start = None
+        last_query_features_pointer = -1
         c = GenomicFeature.CHROMOSOMES
         query_features = sorted(genomic_features)
         hit_index = dict()
         while query_features_pointer < len(query_features) and db_features_pointer < len(self.features):
-            q = query_features[query_features_pointer]
+            if last_query_features_pointer != query_features_pointer:
+                q = query_features[query_features_pointer]
+                if match_start is not None:
+                    db_features_pointer = match_start
+                    match_start = None
+                last_query_features_pointer = query_features_pointer
             d, association_hash = self.features[db_features_pointer]
             if q.reference_name != d.reference_name:
                 raise NotImplementedError('All records in query and datastore currently must match same reference')
@@ -607,6 +614,8 @@ class ViccDb:
             matches = hit_index.get(key, list())
             matches.append(m)
             hit_index[key] = matches
+            if match_start is None:
+                match_start = db_features_pointer
             db_features_pointer += 1
         hits = list()
         for key, matches in hit_index.items():

@@ -84,7 +84,7 @@ class TestViccDb(object):
         aset = {hit['association'] for hit in hits}
         assert len(aset) > TEST_SIZE
         qset = {hit['query'] for hit in hits}
-        assert len(qset) < TEST_SIZE
+        assert len(qset) == TEST_SIZE
 
 
 class TestGenomicFeatures(object):
