@@ -67,7 +67,7 @@ class TestViccDb(object):
         assert len(hits) >= 500
         associations = [hit['association'] for hit in hits]
         results = ViccDb(associations)
-        assert len(results.sources) >= 5
+        assert len(results.sources) == 6
         gf = GenomicFeature(chromosome=7, start=140453136, end=140453136,
                                      reference_name='GRCh37', name='V600E', gene_symbol='BRAF')
         hits2 = list(vdb.search_by_features([gf]))
