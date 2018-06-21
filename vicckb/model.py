@@ -92,6 +92,10 @@ class Gene(Element):
         self.entrez_id = doc['entrez_id']
         self._doc = doc
 
+    @property
+    def symbol(self):
+        return self.gene_symbol
+
     def __str__(self):
         return str(self.gene_symbol)
 
@@ -102,6 +106,7 @@ class Gene(Element):
         return int(self.entrez_id)
 
     def __eq__(self, other):
+        assert self.entrez_id
         return self.entrez_id == other.entrez_id
 
     def __lt__(self, other):
@@ -113,13 +118,17 @@ class Gene(Element):
 
 class GenomicFeature(Element):
 
-    CHROMOSOMES = [str(x) for x in range(1, 23)] + ['X', 'Y']
+    CHROMOSOMES = [str(x) for x in range(1, 23)] + ['X', 'Y', 'MT']
     REFERENCE_BUILDS = ['GRCh37', 'GRCh38']
 
     def __init__(self, chromosome, start, end, referenceName='GRCh37', name='', geneSymbol='', sequence_ontology={}, alt=None, **kwargs):
         chromosome = str(chromosome)
         if chromosome.lower().startswith('chr'):
             chromosome = chromosome[3:]
+        if chromosome == '23':
+            chromosome = 'X'
+        if chromosome == '24':
+            chromosome = 'Y'
         assert chromosome in GenomicFeature.CHROMOSOMES
         self.chromosome = chromosome
         self.start = int(start)
@@ -236,19 +245,19 @@ class ViccAssociation(dict):
     def genes(self):
         if getattr(self, '_genes', None):
             return self._genes
-        out = list()
+        out = set()
         for g in self['genes']:
             if not g:
                 continue
             try:
-                out.append(Gene(g))
+                out.add(Gene(g))
             except KeyError:
                 continue
             except AssertionError:
                 warn('Ambiguous gene symbol {} in assertion {}'.format(g, self))
                 continue
-        self._genes = out
-        return out
+        self._genes = list(out)
+        return self._genes
 
     @property
     def source(self):
