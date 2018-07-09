@@ -106,7 +106,6 @@ class Gene(Element):
         return int(self.entrez_id)
 
     def __eq__(self, other):
-        assert self.entrez_id
         return self.entrez_id == other.entrez_id
 
     def __lt__(self, other):
@@ -245,19 +244,19 @@ class ViccAssociation(dict):
     def genes(self):
         if getattr(self, '_genes', None):
             return self._genes
-        out = set()
+        out = list()
         for g in self['genes']:
             if not g:
                 continue
             try:
-                out.add(Gene(g))
+                out.append(Gene(g))
             except KeyError:
                 continue
             except AssertionError:
                 warn('Ambiguous gene symbol {} in assertion {}'.format(g, self))
                 continue
-        self._genes = list(out)
-        return self._genes
+        self._genes = out
+        return out
 
     @property
     def source(self):
