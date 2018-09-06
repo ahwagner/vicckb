@@ -7,7 +7,7 @@ from vicckb.harmonizers import DiseaseHarmonizer
 def adh():
     """Aliased Disease Harmonizer"""
     return DiseaseHarmonizer(map_file=(DATA_ROOT / 'disease_alias.tsv'),
-                             disease_ontology='DO')
+                             disease_ontology='DOID')
 
 
 class TestDiseaseHarmonizer(object):

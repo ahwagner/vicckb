@@ -5,7 +5,7 @@ import csv
 BIOONTOLOGY_URL = 'http://data.bioontology.org/search'
 EBI_URL = 'https://www.ebi.ac.uk/ols/api/search'
 ONTOLOGIES = {
-    'DO': {'ebi': 'doid', 'bioontology': 'DOID'}
+    'DOID': {'ebi': 'doid', 'bioontology': 'DOID'}
 }
 
 
