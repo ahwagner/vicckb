@@ -120,7 +120,7 @@ class GenomicFeature(Element):
     CHROMOSOMES = [str(x) for x in range(1, 23)] + ['X', 'Y', 'MT']
     REFERENCE_BUILDS = ['GRCh37', 'GRCh38']
 
-    def __init__(self, chromosome, start, end, referenceName='GRCh37', name='', geneSymbol='', sequence_ontology={}, alt=None, **kwargs):
+    def __init__(self, chromosome, start, end, referenceName='GRCh37', name='', geneSymbol='', sequence_ontology={}, alt=None, ref=None, **kwargs):
         chromosome = str(chromosome)
         if chromosome.lower().startswith('chr'):
             chromosome = chromosome[3:]
@@ -135,6 +135,7 @@ class GenomicFeature(Element):
         assert self.start <= self.end
         self.so = sequence_ontology
         self.alt = alt
+        self.ref = ref
         self.name = name
         self.gene_symbol = geneSymbol
         assert referenceName in GenomicFeature.REFERENCE_BUILDS
