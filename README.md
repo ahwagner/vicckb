@@ -1,2 +1,2 @@
 # vicckb
-python module and CLI for querying the vicc knowledgebase integration datastore
+python module and CLI for querying the VICC meta-Knowledgebase
