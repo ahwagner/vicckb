@@ -280,7 +280,7 @@ class ViccAssociation(dict):
     def disease(self):
         try:
             return Disease(**self['association']['phenotype']['type'])
-        except:
+        except KeyError:
             return None
 
     @property
@@ -502,9 +502,12 @@ class ViccDb:
         except KeyError:
             element_by_source = defaultdict(set)
             for association in self:
+                association_element = None
                 association_element = getattr(association, element)
                 if hasattr(association_element, '__iter__') and not isinstance(association_element, str):
                     element_by_source[association.source].update(association_element)
+                elif association_element is None:
+                    continue
                 else:
                     element_by_source[association.source].add(association_element)
             self._element_by_source[element] = dict(element_by_source)
