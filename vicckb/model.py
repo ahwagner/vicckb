@@ -344,7 +344,10 @@ class ViccDb:
 
     DEFAULT_CACHE = DATA_ROOT / 'association_cache.pkl'
 
-    def __init__(self, associations=None, load_cache=False, save_cache=False, cache_path=DEFAULT_CACHE):
+    def __init__(self, associations=None, load_cache=False,
+                 save_cache=False, cache_path=DEFAULT_CACHE,
+                 data_dir=(DATA_ROOT / '0.10')
+                 ):
         if load_cache and save_cache:
             raise ValueError('Can only load or save cache, not both.')
         if load_cache:
@@ -353,12 +356,12 @@ class ViccDb:
         elif associations is not None:
             self.associations = associations
         else:
-            self.load_data()
+            self.load_data(data_dir=data_dir)
         self._index_associations()
         if save_cache:
             self.cache_data(cache_path)
 
-    def load_data(self, data_dir=(DATA_ROOT / '0.10')):
+    def load_data(self, data_dir):
         resource_paths = list(data_dir.glob('*.json'))
         if resource_paths:
             self._load_local(resource_paths)
