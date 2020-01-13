@@ -1,4 +1,4 @@
 pytest
-pyupset
-pandas
-matplotlib
+pyupset==0.1.1.post7
+pandas==0.20
+matplotlib==2.0
