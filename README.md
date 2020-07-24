@@ -1,2 +1,2 @@
 # vicckb
-python module and CLI for querying the VICC meta-Knowledgebase
+python module for analyzing the VICC meta-Knowledgebase
